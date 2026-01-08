@@ -1,0 +1,28 @@
+{
+  "name": "solcerer",
+  "version": "1.0.0",
+  "description": "Solana memecoin tracking Discord bot",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "register": "ts-node src/register-commands.ts"
+  },
+  "keywords": ["solana", "discord", "bot", "crypto", "memecoin"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.12",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7",
+    "openai": "^4.77.0",
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
