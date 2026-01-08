@@ -9,7 +9,13 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "register": "ts-node src/register-commands.ts"
   },
-  "keywords": ["solana", "discord", "bot", "crypto", "memecoin"],
+  "keywords": [
+    "solana",
+    "discord",
+    "bot",
+    "crypto",
+    "memecoin"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -17,7 +23,9 @@
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
     "openai": "^4.77.0",
-    "playwright": "^1.49.1"
+    "playwright": "^1.49.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",

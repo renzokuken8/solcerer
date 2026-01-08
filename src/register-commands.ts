@@ -8,6 +8,16 @@ const commands = [
     .setName("ping")
     .setDescription("Check if Solcerer is alive"),
 
+    new SlashCommandBuilder()
+    .setName("analyze")
+    .setDescription("AI analysis of Twitter sentiment")
+    .addStringOption((option) =>
+      option
+        .setName("query")
+        .setDescription("Twitter handle, CA, or ticker to analyze")
+        .setRequired(true)
+    ),
+
   new SlashCommandBuilder()
     .setName("launches")
     .setDescription("Show the latest pump.fun token launches"),
