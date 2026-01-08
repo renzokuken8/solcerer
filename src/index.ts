@@ -9,6 +9,9 @@ import { handlePulseCommand } from "./commands/pulse";
 import { handleAlertsCommand } from "./commands/alerts";
 import { handleSetAlertCommand } from "./commands/setalert";
 import { handleRemoveAlertCommand } from "./commands/removealert";
+import { handleAddTwitterCommand } from "./commands/addtwitter";
+import { handleRemoveTwitterCommand } from "./commands/removetwitter";
+import { handleFollowingCommand } from "./commands/following";
 
 dotenv.config();
 
@@ -67,6 +70,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (commandName === "removealert") {
     await handleRemoveAlertCommand(interaction);
+  }
+
+  if (commandName === "addtwitter") {
+    await handleAddTwitterCommand(interaction);
+  }
+
+  if (commandName === "removetwitter") {
+    await handleRemoveTwitterCommand(interaction);
+  }
+
+  if (commandName === "following") {
+    await handleFollowingCommand(interaction);
   }
 });
 

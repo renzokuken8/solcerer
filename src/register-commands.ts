@@ -51,8 +51,8 @@ const commands = [
     .setDescription("Get social sentiment for a token")
     .addStringOption((option) =>
       option
-        .setName("mint")
-        .setDescription("The Solana mint address")
+        .setName("query")
+        .setDescription("Token mint, ticker ($SOL), or name")
         .setRequired(true)
     ),
 
@@ -95,6 +95,30 @@ const commands = [
         .setDescription("The Solana mint address")
         .setRequired(true)
     ),
+
+  new SlashCommandBuilder()
+    .setName("addtwitter")
+    .setDescription("Track a Twitter account")
+    .addStringOption((option) =>
+      option
+        .setName("handle")
+        .setDescription("Twitter username (without @)")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("removetwitter")
+    .setDescription("Stop tracking a Twitter account")
+    .addStringOption((option) =>
+      option
+        .setName("handle")
+        .setDescription("Twitter username (without @)")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("following")
+    .setDescription("View your tracked Twitter accounts"),
 ].map((command) => command.toJSON());
 
 const token = process.env.DISCORD_BOT_TOKEN;
