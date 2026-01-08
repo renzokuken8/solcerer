@@ -12,6 +12,7 @@ import { handleRemoveAlertCommand } from "./commands/removealert";
 import { handleAddTwitterCommand } from "./commands/addtwitter";
 import { handleRemoveTwitterCommand } from "./commands/removetwitter";
 import { handleFollowingCommand } from "./commands/following";
+import { handleTrendingCommand } from "./commands/trending";
 
 dotenv.config();
 
@@ -82,6 +83,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (commandName === "following") {
     await handleFollowingCommand(interaction);
+  }
+
+  if (commandName === "trending") {
+    await handleTrendingCommand(interaction);
   }
 });
 

@@ -18,7 +18,7 @@ const commands = [
     .addStringOption((option) =>
       option
         .setName("mint")
-        .setDescription("The Solana mint address")
+        .setDescription("The Solana mint address, ticker, or name")
         .setRequired(true)
     ),
 
@@ -48,7 +48,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("pulse")
-    .setDescription("Get social sentiment for a token")
+    .setDescription("Get social stats for a token")
     .addStringOption((option) =>
       option
         .setName("query")
@@ -119,6 +119,10 @@ const commands = [
   new SlashCommandBuilder()
     .setName("following")
     .setDescription("View your tracked Twitter accounts"),
+
+  new SlashCommandBuilder()
+    .setName("trending")
+    .setDescription("Show trending Solana tokens from DEX Screener"),
 ].map((command) => command.toJSON());
 
 const token = process.env.DISCORD_BOT_TOKEN;
