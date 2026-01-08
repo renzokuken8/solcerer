@@ -58,7 +58,43 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("alerts")
-    .setDescription("Manage your price alerts"),
+    .setDescription("View your price alerts"),
+
+  new SlashCommandBuilder()
+    .setName("setalert")
+    .setDescription("Set a price alert for a token")
+    .addStringOption((option) =>
+      option
+        .setName("mint")
+        .setDescription("The Solana mint address")
+        .setRequired(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("type")
+        .setDescription("Alert when price goes above or below")
+        .setRequired(true)
+        .addChoices(
+          { name: "Above", value: "above" },
+          { name: "Below", value: "below" }
+        )
+    )
+    .addNumberOption((option) =>
+      option
+        .setName("price")
+        .setDescription("Target price in USD")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("removealert")
+    .setDescription("Remove a price alert")
+    .addStringOption((option) =>
+      option
+        .setName("mint")
+        .setDescription("The Solana mint address")
+        .setRequired(true)
+    ),
 ].map((command) => command.toJSON());
 
 const token = process.env.DISCORD_BOT_TOKEN;
