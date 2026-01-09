@@ -17,6 +17,9 @@ export interface Tweet {
   isRetweet: boolean;
   retweetedBy: string | null;
   isQuoteRetweet: boolean;
+  quotedTweet: string | null;
+  isReply: boolean;
+  replyingTo: string | null;
 }
 
 function randomDelay(min: number, max: number): Promise<void> {
@@ -125,9 +128,31 @@ async function extractTweets(page: any, profileHandle: string): Promise<any[]> {
       const socialText = socialContext?.textContent || "";
       const isRetweet = socialText.toLowerCase().includes("reposted") || socialText.toLowerCase().includes("retweeted");
       
-      // Check for quote retweet (has embedded tweet)
-      const quoteTweet = article.querySelector('[data-testid="tweet"] [data-testid="tweet"]');
-      const isQuoteRetweet = !!quoteTweet;
+      // Check for reply indicator - look for "Replying to" text
+      const replyIndicator = article.querySelector('[data-testid="reply"]')?.closest('div')?.parentElement;
+      const replyText = (article as HTMLElement).innerText || "";
+      const isReply = replyText.includes("Replying to");
+      let replyingTo: string | null = null;
+      
+      if (isReply) {
+        const replyMatch = replyText.match(/Replying to\s+(@\w+)/);
+        if (replyMatch) {
+          replyingTo = replyMatch[1];
+        }
+      }
+      
+      // Check for quote tweet - has an inner tweet/card
+      const quotedTweetEl = article.querySelector('[data-testid="tweet"] [data-testid="tweet"]') || 
+                           article.querySelector('[data-testid="card.wrapper"]');
+      const isQuoteRetweet = !!quotedTweetEl && !isRetweet;
+      let quotedTweet: string | null = null;
+      
+      if (isQuoteRetweet && quotedTweetEl) {
+        const quotedText = quotedTweetEl.querySelector('[data-testid="tweetText"]');
+        if (quotedText) {
+          quotedTweet = quotedText.textContent || null;
+        }
+      }
       
       const likeButton = article.querySelector('[data-testid="like"]');
       const retweetButton = article.querySelector('[data-testid="retweet"]');
@@ -183,6 +208,9 @@ async function extractTweets(page: any, profileHandle: string): Promise<any[]> {
           isRetweet,
           retweetedBy: isRetweet ? handle : null,
           isQuoteRetweet,
+          quotedTweet,
+          isReply,
+          replyingTo,
         });
       }
     });
@@ -236,6 +264,9 @@ export async function scrapeTwitterProfile(handle: string): Promise<Tweet[]> {
       isRetweet: t.isRetweet,
       retweetedBy: t.retweetedBy,
       isQuoteRetweet: t.isQuoteRetweet,
+      quotedTweet: t.quotedTweet,
+      isReply: t.isReply,
+      replyingTo: t.replyingTo,
     }));
   } catch (error) {
     console.error(`Error scraping @${handle}:`, error);
@@ -294,6 +325,9 @@ export async function scrapeTwitterSearch(query: string): Promise<Tweet[]> {
       isRetweet: t.isRetweet,
       retweetedBy: t.retweetedBy,
       isQuoteRetweet: t.isQuoteRetweet,
+      quotedTweet: t.quotedTweet,
+      isReply: t.isReply,
+      replyingTo: t.replyingTo,
     }));
   } catch (error) {
     console.error(`Error searching Twitter:`, error);

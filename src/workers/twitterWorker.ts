@@ -102,18 +102,28 @@ async function checkTrackedAccounts(client: Client) {
             alert_sent: true,
           });
 
-          // Build embed
-          let title = `@${tweet.handle}`;
+          // Build title based on tweet type
+          let title = `@${handle}`;
           let description = tweet.content;
+          let color = 0x1DA1F2; // Default Twitter blue
           
           // Handle retweets
           if (tweet.isRetweet && tweet.retweetedBy) {
             title = `🔁 @${tweet.retweetedBy} retweeted @${tweet.handle}`;
+            color = 0x17BF63; // Green
           }
-          
-          // Handle quote retweets
-          if (tweet.isQuoteRetweet && tweet.retweetedBy) {
-            title = `💬 @${tweet.retweetedBy} quoted @${tweet.handle}`;
+          // Handle quote tweets
+          else if (tweet.isQuoteRetweet) {
+            title = `💬 @${handle} quoted`;
+            if (tweet.quotedTweet) {
+              description = `${tweet.content}\n\n┌─────────────────\n│ ${tweet.quotedTweet.substring(0, 200)}${tweet.quotedTweet.length > 200 ? '...' : ''}\n└─────────────────`;
+            }
+            color = 0x794BC4; // Purple
+          }
+          // Handle replies
+          else if (tweet.isReply && tweet.replyingTo) {
+            title = `↩️ @${handle} replied to ${tweet.replyingTo}`;
+            color = 0xFFAD1F; // Orange
           }
 
           const embed = new EmbedBuilder()
@@ -126,12 +136,12 @@ async function checkTrackedAccounts(client: Client) {
               { name: "❤️ Likes", value: tweet.likes.toLocaleString(), inline: true },
               { name: "🔁 Retweets", value: tweet.retweets.toLocaleString(), inline: true },
             )
-            .setColor(tweet.isRetweet ? 0x17BF63 : tweet.isQuoteRetweet ? 0x794BC4 : 0x1DA1F2)
+            .setColor(color)
             .setURL(`https://x.com/${tweet.handle}/status/${tweet.tweetId}`)
             .setTimestamp(tweet.postedAt);
 
           await channel.send({ embeds: [embed] });
-          console.log(`Posted tweet from @${tweet.handle}`);
+          console.log(`Posted tweet from @${handle}`);
           
           // Small delay between posts
           await new Promise((r) => setTimeout(r, 1000));
