@@ -1,4 +1,4 @@
-# Solcerer 🧙‍♂️
+# Solcerer (∩๏﹏๏)⊃━☆ﾟ.*
 
 A Solana memecoin tracking Discord bot with real-time Twitter scraping, AI sentiment analysis, whale tracking, and honeypot detection.
 
