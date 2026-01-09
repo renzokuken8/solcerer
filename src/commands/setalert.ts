@@ -2,13 +2,29 @@ import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { getTokenInfo } from "../utils/helius";
 import { supabase } from "../utils/supabase";
 
+function formatMarketCap(mc: number): string {
+  if (mc >= 1000000000) {
+    return `$${(mc / 1000000000).toFixed(2)}B`;
+  } else if (mc >= 1000000) {
+    return `$${(mc / 1000000).toFixed(2)}M`;
+  } else if (mc >= 1000) {
+    return `$${(mc / 1000).toFixed(2)}K`;
+  }
+  return `$${mc}`;
+}
+
 export async function handleSetAlertCommand(interaction: ChatInputCommandInteraction) {
   const mint = interaction.options.getString("mint", true);
   const type = interaction.options.getString("type", true);
-  const price = interaction.options.getNumber("price", true);
+  const marketcap = interaction.options.getNumber("marketcap", true);
   const userId = interaction.user.id;
 
-  await interaction.deferReply();
+  try {
+    await interaction.deferReply();
+  } catch {
+    console.log("Failed to defer reply");
+    return;
+  }
 
   try {
     // Ensure user exists
@@ -32,19 +48,26 @@ export async function handleSetAlertCommand(interaction: ChatInputCommandInterac
       user_id: userId,
       mint,
       type,
-      threshold: price,
+      threshold: marketcap,
     });
 
     const embed = new EmbedBuilder()
       .setTitle("🔔 Alert Created")
-      .setDescription(`You'll be notified when **${name} (${symbol})** goes **${type}** $${price}`)
-      .addFields({ name: "Mint", value: `\`${mint}\`` })
+      .setDescription(`You'll be notified when **${name} (${symbol})** market cap goes **${type}** ${formatMarketCap(marketcap)}`)
+      .addFields(
+        { name: "Mint", value: `\`${mint}\`` },
+        { name: "Target", value: `${type} ${formatMarketCap(marketcap)} market cap` }
+      )
       .setColor(0x00FF00)
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Error in /setalert command:", error);
-    await interaction.editReply("Error creating alert. Try again later.");
+    try {
+      await interaction.editReply("Error creating alert. Try again later.");
+    } catch {
+      console.log("Could not send error message");
+    }
   }
 }

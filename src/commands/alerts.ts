@@ -1,61 +1,85 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { supabase } from "../utils/supabase";
 
+function formatMarketCap(mc: number): string {
+  if (mc >= 1000000000) {
+    return `$${(mc / 1000000000).toFixed(2)}B`;
+  } else if (mc >= 1000000) {
+    return `$${(mc / 1000000).toFixed(2)}M`;
+  } else if (mc >= 1000) {
+    return `$${(mc / 1000).toFixed(2)}K`;
+  }
+  return `$${mc}`;
+}
+
 export async function handleAlertsCommand(interaction: ChatInputCommandInteraction) {
   const userId = interaction.user.id;
 
-  await interaction.deferReply();
+  try {
+    await interaction.deferReply();
+  } catch {
+    console.log("Failed to defer reply");
+    return;
+  }
 
   try {
-    // Ensure user exists
-    await supabase.from("users").upsert({ id: userId }, { onConflict: "id" });
+    console.log("Fetching alerts for user:", userId);
 
-    // Get user's alerts
-    const { data: alerts } = await supabase
+    // Query without join first to debug
+    const { data: alerts, error } = await supabase
       .from("price_alerts")
-      .select()
+      .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .eq("triggered", false);
 
-    if (!alerts || alerts.length === 0) {
-      const embed = new EmbedBuilder()
-        .setTitle("🔔 Your Price Alerts")
-        .setDescription("You have no active alerts.\n\nTo create an alert, use:\n`/track <mint>` to add a token first")
-        .setColor(0x9945FF)
-        .setTimestamp();
+    console.log("Query result:", alerts, error);
 
-      await interaction.editReply({ embeds: [embed] });
+    if (error) {
+      console.error("Supabase error:", error);
+      await interaction.editReply("Error fetching alerts. Try again later.");
       return;
     }
 
-    // Get token details
-    const mints = [...new Set(alerts.map((a) => a.mint))];
-    const { data: tokens } = await supabase
-      .from("tokens")
-      .select("mint, name, symbol")
-      .in("mint", mints);
+    if (!alerts || alerts.length === 0) {
+      await interaction.editReply("You have no active alerts. Use `/setalert` to create one.");
+      return;
+    }
 
-    const tokenMap = new Map(tokens?.map((t) => [t.mint, t]) || []);
-
-    const lines = alerts.map((alert, i) => {
-      const token = tokenMap.get(alert.mint);
-      const name = token?.name || "Unknown";
-      const symbol = token?.symbol || "???";
-      const status = alert.triggered ? "✅ Triggered" : "⏳ Active";
-      
-      return `${i + 1}. **${name}** (${symbol})\n   ${alert.type} $${alert.threshold}\n   Status: ${status}`;
-    });
+    // Get token info from DexScreener for each alert
+    const lines = [];
+    for (const alert of alerts) {
+      try {
+        const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${alert.mint}`);
+        const data = (await response.json()) as any;
+        
+        let name = "Unknown";
+        let symbol = "???";
+        
+        if (data.pairs && data.pairs.length > 0) {
+          name = data.pairs[0].baseToken?.name || "Unknown";
+          symbol = data.pairs[0].baseToken?.symbol || "???";
+        }
+        
+        lines.push(`**${name} (${symbol})**\n└ ${alert.type} ${formatMarketCap(alert.threshold)}`);
+      } catch {
+        lines.push(`**Unknown Token**\n└ ${alert.type} ${formatMarketCap(alert.threshold)}`);
+      }
+    }
 
     const embed = new EmbedBuilder()
       .setTitle("🔔 Your Price Alerts")
       .setDescription(lines.join("\n\n"))
-      .setColor(0x9945FF)
-      .setFooter({ text: `${alerts.length} alert(s)` })
+      .setColor(0x00FF00)
+      .setFooter({ text: "Use /removealert to delete an alert" })
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Error in /alerts command:", error);
-    await interaction.editReply("Error fetching alerts. Try again later.");
+    try {
+      await interaction.editReply("Error fetching alerts. Try again later.");
+    } catch {
+      console.log("Could not send error message");
+    }
   }
 }

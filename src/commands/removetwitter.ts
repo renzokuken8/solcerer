@@ -5,14 +5,19 @@ export async function handleRemoveTwitterCommand(interaction: ChatInputCommandIn
   const handle = interaction.options.getString("handle", true).replace("@", "");
   const userId = interaction.user.id;
 
-  await interaction.deferReply();
+  try {
+    await interaction.deferReply();
+  } catch {
+    console.log("Failed to defer reply");
+    return;
+  }
 
   try {
     const { data, error } = await supabase
       .from("tracked_twitter_handles")
       .delete()
       .eq("user_id", userId)
-      .eq("handle", handle)
+      .eq("handle", handle.toLowerCase())
       .select();
 
     if (error || !data || data.length === 0) {
@@ -29,6 +34,10 @@ export async function handleRemoveTwitterCommand(interaction: ChatInputCommandIn
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Error in /removetwitter command:", error);
-    await interaction.editReply("Error removing Twitter handle. Try again later.");
+    try {
+      await interaction.editReply("Error removing Twitter handle. Try again later.");
+    } catch {
+      console.log("Could not send error message");
+    }
   }
 }

@@ -5,7 +5,12 @@ export async function handleAddTwitterCommand(interaction: ChatInputCommandInter
   const handle = interaction.options.getString("handle", true).replace("@", "");
   const userId = interaction.user.id;
 
-  await interaction.deferReply();
+  try {
+    await interaction.deferReply();
+  } catch {
+    console.log("Failed to defer reply");
+    return;
+  }
 
   try {
     // Ensure user exists
@@ -16,7 +21,7 @@ export async function handleAddTwitterCommand(interaction: ChatInputCommandInter
       .from("tracked_twitter_handles")
       .select()
       .eq("user_id", userId)
-      .eq("handle", handle)
+      .eq("handle", handle.toLowerCase())
       .single();
 
     if (existing) {
@@ -24,21 +29,35 @@ export async function handleAddTwitterCommand(interaction: ChatInputCommandInter
       return;
     }
 
+    // Set followed_at to 24 hours ago to catch recent tweets
+    const followedAt = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
     // Add to tracked handles
-    await supabase.from("tracked_twitter_handles").insert({
+    const { error } = await supabase.from("tracked_twitter_handles").insert({
       user_id: userId,
-      handle,
+      handle: handle.toLowerCase(),
+      followed_at: followedAt,
     });
+
+    if (error) {
+      console.error("Error inserting handle:", error);
+      await interaction.editReply("Error adding Twitter handle. Try again.");
+      return;
+    }
 
     const embed = new EmbedBuilder()
       .setTitle("🐦 Twitter Handle Added")
-      .setDescription(`Now tracking **@${handle}**\n\nNew tweets will be posted to the tracked tweets channel.`)
+      .setDescription(`Now tracking **@${handle}**\n\nNew tweets will be posted to the tracked tweets channel.\n\n*Note: Tweets from the last 24 hours will also be included.*`)
       .setColor(0x1DA1F2)
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Error in /addtwitter command:", error);
-    await interaction.editReply("Error adding Twitter handle. Try again later.");
+    try {
+      await interaction.editReply("Error adding Twitter handle. Try again later.");
+    } catch {
+      console.log("Could not send error message");
+    }
   }
 }

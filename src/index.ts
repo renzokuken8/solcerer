@@ -14,6 +14,9 @@ import { handleRemoveTwitterCommand } from "./commands/removetwitter";
 import { handleFollowingCommand } from "./commands/following";
 import { handleTrendingCommand } from "./commands/trending";
 import { handleAnalyzeCommand } from "./commands/analyze";
+import { handleCheckTwitterCommand } from "./commands/checktwitter";
+import { startTwitterWorker } from "./workers/twitterWorker";
+import { startPriceAlertWorker } from "./workers/priceAlertWorker";
 
 dotenv.config();
 
@@ -27,6 +30,12 @@ const client = new Client({
 
 client.once(Events.ClientReady, (c) => {
   console.log(`Solcerer is online! Logged in as ${c.user.tag}`);
+  
+  // Start workers
+  setTimeout(() => {
+    startTwitterWorker(c);
+    startPriceAlertWorker(c);
+  }, 5000);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -34,64 +43,72 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   const { commandName } = interaction;
 
-  if (commandName === "ping") {
-    await interaction.reply("Pong!");
-  }
+  try {
+    if (commandName === "ping") {
+      await interaction.reply("Pong!");
+    }
 
-  if (commandName === "ca") {
-    await handleCaCommand(interaction);
-  }
+    if (commandName === "ca") {
+      await handleCaCommand(interaction);
+    }
 
-  if (commandName === "track") {
-    await handleTrackCommand(interaction);
-  }
+    if (commandName === "track") {
+      await handleTrackCommand(interaction);
+    }
 
-  if (commandName === "untrack") {
-    await handleUntrackCommand(interaction);
-  }
+    if (commandName === "untrack") {
+      await handleUntrackCommand(interaction);
+    }
 
-  if (commandName === "watchlist") {
-    await handleWatchlistCommand(interaction);
-  }
+    if (commandName === "watchlist") {
+      await handleWatchlistCommand(interaction);
+    }
 
-  if (commandName === "launches") {
-    await handleLaunchesCommand(interaction);
-  }
+    if (commandName === "launches") {
+      await handleLaunchesCommand(interaction);
+    }
 
-  if (commandName === "pulse") {
-    await handlePulseCommand(interaction);
-  }
+    if (commandName === "pulse") {
+      await handlePulseCommand(interaction);
+    }
 
-  if (commandName === "alerts") {
-    await handleAlertsCommand(interaction);
-  }
+    if (commandName === "alerts") {
+      await handleAlertsCommand(interaction);
+    }
 
-  if (commandName === "setalert") {
-    await handleSetAlertCommand(interaction);
-  }
+    if (commandName === "setalert") {
+      await handleSetAlertCommand(interaction);
+    }
 
-  if (commandName === "removealert") {
-    await handleRemoveAlertCommand(interaction);
-  }
+    if (commandName === "removealert") {
+      await handleRemoveAlertCommand(interaction);
+    }
 
-  if (commandName === "addtwitter") {
-    await handleAddTwitterCommand(interaction);
-  }
+    if (commandName === "addtwitter") {
+      await handleAddTwitterCommand(interaction);
+    }
 
-  if (commandName === "removetwitter") {
-    await handleRemoveTwitterCommand(interaction);
-  }
+    if (commandName === "removetwitter") {
+      await handleRemoveTwitterCommand(interaction);
+    }
 
-  if (commandName === "following") {
-    await handleFollowingCommand(interaction);
-  }
+    if (commandName === "following") {
+      await handleFollowingCommand(interaction);
+    }
 
-  if (commandName === "analyze") {
-    await handleAnalyzeCommand(interaction);
-  }
+    if (commandName === "trending") {
+      await handleTrendingCommand(interaction);
+    }
 
-  if (commandName === "trending") {
-    await handleTrendingCommand(interaction);
+    if (commandName === "analyze") {
+      await handleAnalyzeCommand(interaction);
+    }
+
+    if (commandName === "checktwitter") {
+      await handleCheckTwitterCommand(interaction);
+    }
+  } catch (error) {
+    console.error(`Error handling command ${commandName}:`, error);
   }
 });
 

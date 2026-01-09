@@ -14,6 +14,9 @@ export interface Tweet {
   likes: number;
   retweets: number;
   replies: number;
+  isRetweet: boolean;
+  retweetedBy: string | null;
+  isQuoteRetweet: boolean;
 }
 
 function randomDelay(min: number, max: number): Promise<void> {
@@ -69,7 +72,6 @@ async function createAuthenticatedContext() {
     timezoneId: fingerprint.timezone,
   });
 
-  // Add Twitter auth cookies
   const authToken = process.env.TWITTER_AUTH_TOKEN;
   const ct0 = process.env.TWITTER_CT0;
 
@@ -108,8 +110,8 @@ async function createAuthenticatedContext() {
   return { browser, context, page };
 }
 
-async function extractTweets(page: any): Promise<any[]> {
-  return page.evaluate(() => {
+async function extractTweets(page: any, profileHandle: string): Promise<any[]> {
+  return page.evaluate((handle: string) => {
     const items: any[] = [];
     const articles = document.querySelectorAll('article[data-testid="tweet"]');
 
@@ -117,6 +119,15 @@ async function extractTweets(page: any): Promise<any[]> {
       const textEl = article.querySelector('[data-testid="tweetText"]');
       const timeEl = article.querySelector("time");
       const linkEl = article.querySelector('a[href*="/status/"]');
+      
+      // Check for retweet indicator
+      const socialContext = article.querySelector('[data-testid="socialContext"]');
+      const socialText = socialContext?.textContent || "";
+      const isRetweet = socialText.toLowerCase().includes("reposted") || socialText.toLowerCase().includes("retweeted");
+      
+      // Check for quote retweet (has embedded tweet)
+      const quoteTweet = article.querySelector('[data-testid="tweet"] [data-testid="tweet"]');
+      const isQuoteRetweet = !!quoteTweet;
       
       const likeButton = article.querySelector('[data-testid="like"]');
       const retweetButton = article.querySelector('[data-testid="retweet"]');
@@ -159,21 +170,25 @@ async function extractTweets(page: any): Promise<any[]> {
         const href = linkEl?.getAttribute("href") || "";
         const tweetIdMatch = href.match(/\/status\/(\d+)/);
         const handleMatch = href.match(/\/([^/]+)\/status/);
+        const originalHandle = handleMatch ? handleMatch[1] : "unknown";
 
         items.push({
           tweetId: tweetIdMatch ? tweetIdMatch[1] : Math.random().toString(),
-          handle: handleMatch ? handleMatch[1] : href.split("/")[1] || "unknown",
+          handle: originalHandle,
           content: textEl.textContent || "",
           postedAt: timeEl?.getAttribute("datetime") || new Date().toISOString(),
           likesStr,
           retweetsStr,
           repliesStr,
+          isRetweet,
+          retweetedBy: isRetweet ? handle : null,
+          isQuoteRetweet,
         });
       }
     });
 
     return items.slice(0, 10);
-  });
+  }, profileHandle);
 }
 
 export async function scrapeTwitterProfile(handle: string): Promise<Tweet[]> {
@@ -205,7 +220,7 @@ export async function scrapeTwitterProfile(handle: string): Promise<Tweet[]> {
       await randomDelay(1000, 2000);
     }
 
-    const rawTweets = await extractTweets(page);
+    const rawTweets = await extractTweets(page, handle);
     console.log(`Found ${rawTweets.length} tweets from @${handle}`);
 
     await browser.close();
@@ -218,6 +233,9 @@ export async function scrapeTwitterProfile(handle: string): Promise<Tweet[]> {
       likes: parseEngagementNumber(t.likesStr),
       retweets: parseEngagementNumber(t.retweetsStr),
       replies: parseEngagementNumber(t.repliesStr),
+      isRetweet: t.isRetweet,
+      retweetedBy: t.retweetedBy,
+      isQuoteRetweet: t.isQuoteRetweet,
     }));
   } catch (error) {
     console.error(`Error scraping @${handle}:`, error);
@@ -234,7 +252,6 @@ export async function scrapeTwitterSearch(query: string): Promise<Tweet[]> {
     
     await randomDelay(1000, 2000);
     
-    // Use the real search URL now that we're authenticated
     const searchUrl = `https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query&f=live`;
     console.log("URL:", searchUrl);
     
@@ -250,7 +267,6 @@ export async function scrapeTwitterSearch(query: string): Promise<Tweet[]> {
       console.log("Tweet selector found!");
     } catch {
       console.log("Tweet selector not found");
-      // Log page content to debug
       const content = await page.evaluate(() => document.body.innerText.substring(0, 500));
       console.log("Page content:", content);
     }
@@ -262,7 +278,7 @@ export async function scrapeTwitterSearch(query: string): Promise<Tweet[]> {
       await randomDelay(1000, 2000);
     }
 
-    const rawTweets = await extractTweets(page);
+    const rawTweets = await extractTweets(page, "");
     console.log(`Found ${rawTweets.length} tweets for "${query}"`);
 
     await browser.close();
@@ -275,6 +291,9 @@ export async function scrapeTwitterSearch(query: string): Promise<Tweet[]> {
       likes: parseEngagementNumber(t.likesStr),
       retweets: parseEngagementNumber(t.retweetsStr),
       replies: parseEngagementNumber(t.repliesStr),
+      isRetweet: t.isRetweet,
+      retweetedBy: t.retweetedBy,
+      isQuoteRetweet: t.isQuoteRetweet,
     }));
   } catch (error) {
     console.error(`Error searching Twitter:`, error);

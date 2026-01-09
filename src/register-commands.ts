@@ -8,19 +8,13 @@ const commands = [
     .setName("ping")
     .setDescription("Check if Solcerer is alive"),
 
-    new SlashCommandBuilder()
-    .setName("analyze")
-    .setDescription("AI analysis of Twitter sentiment")
-    .addStringOption((option) =>
-      option
-        .setName("query")
-        .setDescription("Twitter handle, CA, or ticker to analyze")
-        .setRequired(true)
-    ),
-
   new SlashCommandBuilder()
     .setName("launches")
-    .setDescription("Show the latest pump.fun token launches"),
+    .setDescription("Show the latest token launches"),
+
+  new SlashCommandBuilder()
+    .setName("trending")
+    .setDescription("Show trending Solana tokens from DEX Screener"),
 
   new SlashCommandBuilder()
     .setName("ca")
@@ -67,12 +61,22 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
+    .setName("analyze")
+    .setDescription("AI analysis of Twitter sentiment")
+    .addStringOption((option) =>
+      option
+        .setName("query")
+        .setDescription("Twitter handle, CA, or ticker to analyze")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
     .setName("alerts")
     .setDescription("View your price alerts"),
 
   new SlashCommandBuilder()
     .setName("setalert")
-    .setDescription("Set a price alert for a token")
+    .setDescription("Set a market cap alert for a token")
     .addStringOption((option) =>
       option
         .setName("mint")
@@ -82,7 +86,7 @@ const commands = [
     .addStringOption((option) =>
       option
         .setName("type")
-        .setDescription("Alert when price goes above or below")
+        .setDescription("Alert when market cap goes above or below")
         .setRequired(true)
         .addChoices(
           { name: "Above", value: "above" },
@@ -91,8 +95,8 @@ const commands = [
     )
     .addNumberOption((option) =>
       option
-        .setName("price")
-        .setDescription("Target price in USD")
+        .setName("marketcap")
+        .setDescription("Target market cap (e.g., 5000, 50000, 5000000)")
         .setRequired(true)
     ),
 
@@ -131,8 +135,8 @@ const commands = [
     .setDescription("View your tracked Twitter accounts"),
 
   new SlashCommandBuilder()
-    .setName("trending")
-    .setDescription("Show trending Solana tokens from DEX Screener"),
+    .setName("checktwitter")
+    .setDescription("Manually check tracked Twitter accounts for new tweets"),
 ].map((command) => command.toJSON());
 
 const token = process.env.DISCORD_BOT_TOKEN;
