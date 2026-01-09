@@ -251,9 +251,6 @@ Solcerer uses advanced techniques to scrape Twitter without getting blocked:
 | Price Alert Worker | 1 minute | Checks market caps against alert thresholds |
 | Whale Worker | 2 minutes | Monitors tracked tokens for large transactions |
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
@@ -265,4 +262,3 @@ This bot is for educational and informational purposes only. Always do your own 
 
 ---
 
-Built with ❤️ by [renzokuken8](https://github.com/renzokuken8)
