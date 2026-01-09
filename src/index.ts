@@ -17,6 +17,7 @@ import { handleAnalyzeCommand } from "./commands/analyze";
 import { handleCheckTwitterCommand } from "./commands/checktwitter";
 import { startTwitterWorker } from "./workers/twitterWorker";
 import { startPriceAlertWorker } from "./workers/priceAlertWorker";
+import { startWhaleWorker } from "./workers/whaleWorker";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ client.once(Events.ClientReady, (c) => {
   setTimeout(() => {
     startTwitterWorker(c);
     startPriceAlertWorker(c);
+    startWhaleWorker(c);
   }, 5000);
 });
 
