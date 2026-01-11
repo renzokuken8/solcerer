@@ -9,6 +9,8 @@ A Solana memecoin tracking Discord bot with real-time Twitter scraping, AI senti
 - **Risk Assessment** - Automatic detection of mint authority, freeze authority, and top holder concentration
 - **Honeypot Detection** - Simulates sells via Jupiter to detect scam tokens
 - **Deployer History** - Flags serial deployers who may be rug pullers
+- <img width="545" height="389" alt="image" src="https://github.com/user-attachments/assets/074f643d-e689-4396-80d2-e30c52e8e9fd" />
+
 
 ###  Price Tracking
 - **Watchlist** - Track your favorite tokens
@@ -21,6 +23,9 @@ A Solana memecoin tracking Discord bot with real-time Twitter scraping, AI senti
 - **Account Tracking** - Follow Twitter accounts and get their tweets posted to Discord
 - **Reply/Quote Detection** - Properly displays retweets, quotes, and replies
 - **AI Sentiment Analysis** - GPT-4o powered analysis of Twitter sentiment for any token
+<img width="497" height="424" alt="image" src="https://github.com/user-attachments/assets/bb61e3b9-1c69-4d78-83fe-397c3629d40e" />
+- <img width="978" height="799" alt="image" src="https://github.com/user-attachments/assets/2add042e-6ba0-4a4a-88d3-e86852803c01" />
+
 
 ### Whale Tracking
 - **Large Transaction Monitoring** - Detects $10K+ buys and sells on tracked tokens
